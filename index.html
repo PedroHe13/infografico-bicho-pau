@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratório do Dr. Oliveira - Bicho-Pau</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-image: url('fundo.jpeg');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        #game-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: inherit;
+            transition: filter 0.5s ease;
+            z-index: 1;
+        }
+
+        #game-background.blurred {
+            filter: blur(5px);
+        }
+
+        #game-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        #doctor {
+            position: absolute;
+            bottom: 0;
+            top: 8px;
+            left: 930px;
+            width: 500px;
+            height: 1000px;
+            background: url('https://media.tenor.com/wiMyvo8ZFN0AAAAj/pinguim-penguin.gif') no-repeat;
+            background-size: contain;
+            background-position: bottom;
+            z-index: 2;
+        }
+
+        #stick-insect-dome {
+            position: absolute;
+            bottom: 150px;
+            left: 888px;
+            top: 530px;
+            width: 200px;
+            height: 150px; /* Aumentado para parecer uma redoma */
+            background: url('https://png.pngtree.com/png-clipart/20240222/original/pngtree-stick-insect-in-studio-isolated-animal-photo-png-image_14385346.png') no-repeat center,
+                        radial-gradient(circle, rgba(0, 41, 0, 0.76), rgba(0, 87, 0, 0.781));
+            background-size: 60%, 100%; /* Ajustado para o bicho-pau caber na redoma */
+            clip-path: polygon(20% 100%, 80% 100%, 80% 20%, 70% 10%, 60% 5%, 40% 5%, 30% 10%, 20% 20%);
+            border: 3px solid #228B22;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        #computer {
+            position: absolute;
+            bottom: 150px;
+            left: 1px;
+            top: 370px;
+            width: 289px;
+            height: 200px;
+            background: #ffffff00;
+            border: 15px solid #ffffff00;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        #book {
+            position: absolute;
+            bottom: 50px;
+            left: 700px;
+            top: 610px;
+            width: 190px;
+            height: 50px;
+            background: #deb88700;
+            border: 2px solid #351a0000;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        #microscope {
+            position: absolute;
+            bottom: 150px;
+            left: 410px;
+            top: 430px;
+            width: 190px;
+            height: 180px;
+            background: #77030300;
+            border-radius: 10px;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        #infographic {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ffea;
+            border-radius: 10px;
+            padding: 15px;
+            z-index: 5;
+            font-family: 'Courier New', Courier, monospace;
+            color: #00ffea;
+            box-shadow: 0 0 15px rgba(0, 255, 234, 0.5);
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #infographic:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        #infographic-window {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            max-height: 500px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ffea;
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 11;
+            font-family: 'Courier New', Courier, monospace;
+            color: #00ffea;
+            box-shadow: 0 0 20px rgba(0, 255, 234, 0.5);
+            font-size: 14px;
+            overflow-y: auto;
+            overflow-x: hidden; /* Remove scroll horizontal */
+        }
+
+        #infographic-window::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #infographic-window::-webkit-scrollbar-track {
+            background: #000;
+        }
+
+        #infographic-window::-webkit-scrollbar-thumb {
+            background: #00ffea;
+            border-radius: 4px;
+        }
+
+        #infographic-window h3 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid #00ffea;
+            padding-bottom: 5px;
+        }
+
+        #infographic-window p, #infographic-window ul {
+            margin: 10px 0;
+        }
+
+        #infographic-window ul li {
+            list-style: none;
+            position: relative;
+            padding-left: 15px;
+        }
+
+        #infographic-window ul li:before {
+            content: '>';
+            position: absolute;
+            left: 0;
+            color: #00ffea;
+        }
+
+        #infographic-close-btn {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            cursor: pointer;
+            font-size: 24px; /* Aumentado */
+            color: #fff;
+            background: #000;
+            border-radius: 50%;
+            width: 40px; /* Aumentado */
+            height: 40px; /* Aumentado */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 12;
+        }
+
+        #dialogue {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #dialogue.show {
+            opacity: 1;
+        }
+
+        #dialogue.hide {
+            opacity: 0;
+        }
+
+        #dialogue-content {
+            background: rgba(20, 20, 20, 0.95);
+            border: 2px solid #00ffea;
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 600px;
+            color: #00ffea;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 18px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 255, 234, 0.5);
+        }
+
+        #dialogue-content p {
+            margin: 0 0 20px;
+        }
+
+        #next-btn {
+            background: #00ffea;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        #next-btn:hover {
+            background: #00d1c1;
+        }
+
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #overlay-content {
+            background: #000;
+            padding: 20px;
+            border: 10px solid #000;
+            border-radius: 10px;
+            text-align: center;
+            position: relative;
+            max-width: 80%;
+            max-height: 80%;
+            overflow: hidden;
+        }
+
+        #overlay-data {
+            overflow: hidden;
+        }
+
+        #reaction {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            display: none;
+        }
+
+        #close-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            font-size: 24px; /* Aumentado */
+            color: #fff;
+            background: #000;
+            border-radius: 50%;
+            width: 40px; /* Aumentado */
+            height: 40px; /* Aumentado */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 12;
+        }
+
+        #book-viewer {
+            width: 900px;
+            height: 600px;
+            position: relative;
+            background: none;
+        }
+
+        #book-background {
+            width: 100%;
+            height: 100%;
+            background: url('fundolivro.png') no-repeat center;
+            background-size: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        #book-page {
+            width: 800px;
+            height: 500px;
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            z-index: 1;
+        }
+
+        #book-page img {
+            max-width: 40%;
+            max-height: 90%;
+        }
+
+        #book-nav {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 2;
+        }
+
+        #prev-page, #next-page {
+            background: #8b4513;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #prev-page:hover, #next-page:hover {
+            background: #5a2e0a;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="game-background"></div>
+        <div id="game-content">
+            <div id="doctor"></div>
+            <div id="stick-insect-dome"></div>
+            <div id="computer"></div>
+            <div id="book"></div>
+            <div id="microscope"></div>
+            <div id="infographic">Infografico do Bicho-Pau</div>
+            <div id="infographic-window">
+                <span id="infographic-close-btn">X</span>
+                <h3>Dr. Oliveira: O Bicho-Pau</h3>
+                <p>O bicho-pau é um mestre da camuflagem, resultado da seleção natural. Há milhões de anos, seus ancestrais desenvolveram corpos longos e finos, semelhantes a galhos, para escapar de predadores.</p>
+                <p><b>Evolução e Adaptação:</b></p>
+                <ul>
+                    <li>Os bichos-pau pertencem à ordem Phasmatodea, com mais de 3.000 espécies conhecidas.</li>
+                    <li>Sua camuflagem é tão eficaz que muitos predadores, como pássaros, não os percebem.</li>
+                    <li>Algumas espécies podem até mudar de cor para se adaptar ao ambiente, um processo chamado de polifenismo.</li>
+                </ul>
+                <p><b>Curiosidades:</b></p>
+                <ul>
+                    <li>Seus tons marrons ou verdes imitam a vegetação.</li>
+                    <li>Alguns até balançam como galhos ao vento!</li>
+                    <li>A seleção favoreceu os mais "invisíveis".</li>
+                    <li>Em algumas espécies, as fêmeas podem se reproduzir sem machos, por partenogênese.</li>
+                    <li>Podem regenerar membros perdidos, como pernas, durante a muda.</li>
+                </ul>
+            </div>
+            <div id="dialogue">
+                <div id="dialogue-content">
+                    <p id="dialogue-text"></p>
+                    <button id="next-btn">Próximo</button>
+                </div>
+            </div>
+            <div id="overlay">
+                <div id="overlay-content">
+                    <span id="close-btn">X</span>
+                    <div id="overlay-data"></div>
+                    <img id="reaction" src="https://c.tenor.com/ZisvzS5S1HkAAAAd/tenor.gif">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const stickInsect = document.getElementById('stick-insect-dome');
+        const computer = document.getElementById('computer');
+        const book = document.getElementById('book');
+        const microscope = document.getElementById('microscope');
+        const dialogue = document.getElementById('dialogue');
+        const dialogueText = document.getElementById('dialogue-text');
+        const nextBtn = document.getElementById('next-btn');
+        const overlay = document.getElementById('overlay');
+        const overlayData = document.getElementById('overlay-data');
+        const reaction = document.getElementById('reaction');
+        const closeBtn = document.getElementById('close-btn');
+        const infographic = document.getElementById('infographic');
+        const infographicWindow = document.getElementById('infographic-window');
+        const infographicCloseBtn = document.getElementById('infographic-close-btn');
+        const gameBackground = document.getElementById('game-background');
+
+        const dialogueLines = [
+            "Olá! Eu sou o Dr. Oliveira, Sim, sou o penguim q esta dançando haha, Hoje vamos falar sobre o bicho-pau e sua evolução!",
+            "O bicho-pau é um exemplo fascinante de seleção natural. Há milhões de anos, seus ancestrais começaram a desenvolver características que os ajudavam a sobreviver.",
+            "A principal característica do bicho-pau é seu corpo longo e fino, que se assemelha a um galho. Isso permite que ele se camufle entre galhos e folhas, enganando predadores.",
+            "Com o tempo, a seleção natural favoreceu os indivíduos com cores mais próximas do ambiente, como tons de marrom e verde, tornando-os quase invisíveis na vegetação.",
+            "Além disso, alguns bichos-pau desenvolveram a habilidade de se mover como galhos ao vento, aumentando ainda mais sua camuflagem. Incrível, não acha?"
+        ];
+
+        let dialogueIndex = 0;
+
+        function showDialogue() {
+            dialogue.classList.remove('hide');
+            dialogue.classList.add('show');
+            dialogueText.textContent = dialogueLines[dialogueIndex];
+            if (dialogueIndex === dialogueLines.length - 1) {
+                nextBtn.textContent = 'Fechar';
+            } else {
+                nextBtn.textContent = 'Próximo';
+            }
+        }
+
+        nextBtn.addEventListener('click', () => {
+            dialogueIndex++;
+            if (dialogueIndex < dialogueLines.length) {
+                showDialogue();
+            } else {
+                dialogue.classList.remove('show');
+                dialogue.classList.add('hide');
+                setTimeout(() => {
+                    dialogue.style.display = 'none';
+                    dialogueIndex = 0;
+                }, 500); // Tempo da transição
+            }
+        });
+
+        // Inicia o diálogo ao carregar a página
+        dialogue.style.display = 'flex';
+        showDialogue();
+
+        stickInsect.addEventListener('click', () => {
+            overlayData.innerHTML = '<img src="https://imgs.search.brave.com/IIaSfYC51nAN7opp1blAXDRcUdxW9KPXrYc-LzXQF5A/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9zdGF0/aWMubXVuZG9lZHVj/YWNhby51b2wuY29t/LmJyL211bmRvZWR1/Y2FjYW8vMjAyMS8x/Mi9hbmltYWwtYmlj/aG8tcGF1LmpwZw" style="max-width: 800px;">';
+            overlay.style.display = 'flex';
+            reaction.style.display = 'block';
+            gameBackground.classList.add('blurred');
+        });
+
+        computer.addEventListener('click', () => {
+            overlayData.innerHTML = '<iframe src="https://pt.wikipedia.org/wiki/Bicho-pau" style="width: 600px; height: 400px;"></iframe>';
+            overlay.style.display = 'flex';
+            reaction.style.display = 'none';
+            gameBackground.classList.add('blurred');
+        });
+
+        microscope.addEventListener('click', () => {
+            overlayData.innerHTML = '<img src="https://img.freepik.com/fotos-premium/superficie-verde-da-folha-de-uma-planta-vista-sob-um-microscopio_127345-1773.jpg" style="max-width: 500px;">';
+            overlay.style.display = 'flex';
+            reaction.style.display = 'none';
+            gameBackground.classList.add('blurred');
+        });
+
+        infographic.addEventListener('click', () => {
+            infographicWindow.style.display = 'block';
+            gameBackground.classList.add('blurred');
+        });
+
+        infographicCloseBtn.addEventListener('click', () => {
+            infographicWindow.style.display = 'none';
+            gameBackground.classList.remove('blurred');
+        });
+
+        const bookImages = [
+            'https://i.pinimg.com/474x/ad/eb/53/adeb53734d091303e9ed2931777054bb.jpg',
+            'https://i.pinimg.com/236x/d2/58/25/d258257287719f4e9aca9914205313f6.jpg',
+            'https://i.pinimg.com/236x/b1/f7/e5/b1f7e534237e5e3103eaebb61a082167.jpg',
+            'https://i.pinimg.com/236x/fb/ef/63/fbef63d1c0ec08dee37f3f5cbc0e0783.jpg',
+            'https://i.pinimg.com/236x/42/ef/94/42ef94ad14ce14deedc724264c66ddd5.jpg',
+            'https://i.pinimg.com/236x/10/54/d1/1054d15a267cf22717bcc7d4a53bd573.jpg',
+            'https://i.pinimg.com/236x/62/24/e6/6224e6fbfa1bd192938e0d816ec459dd.jpg',
+            'https://i.pinimg.com/474x/3e/e6/c0/3ee6c0b2747a84b3ac999195e388ad8b.jpg',
+            'https://i.pinimg.com/474x/65/cc/5b/65cc5b01c3947d52b96d1f5c3755ab1a.jpg',
+            'https://i.pinimg.com/736x/8e/0d/d2/8e0dd2ceed3530aa4211fca75c6aed60.jpg',
+            'https://i.pinimg.com/236x/5c/71/24/5c71248b8a38abd3210f2a656f0a0bbe.jpg',
+            'https://c.tenor.com/M4T6_KH_GWMAAAAd/tenor.gif'
+        ];
+
+        let bookPageIndex = 0;
+
+        function updateBookPage() {
+            const bookPage = document.getElementById('book-page');
+            const img1Index = bookPageIndex * 2;
+            const img2Index = bookPageIndex * 2 + 1;
+            const img1Src = bookImages[img1Index] || '';
+            const img2Src = bookImages[img2Index] || '';
+
+            bookPage.innerHTML = `
+                ${img1Src ? `<img src="${img1Src}">` : ''}
+                ${img2Src ? `<img src="${img2Src}">` : ''}
+            `;
+        }
+
+        book.addEventListener('click', () => {
+            bookPageIndex = 0;
+            overlayData.innerHTML = `
+                <div id="book-viewer">
+                    <div id="book-background"></div>
+                    <div id="book-page">
+                        <img src="${bookImages[0]}">
+                        <img src="${bookImages[1]}">
+                    </div>
+                    <div id="book-nav">
+                        <button id="prev-page">Página Anterior</button>
+                        <button id="next-page">Próxima Página</button>
+                    </div>
+                </div>
+            `;
+            overlay.style.display = 'flex';
+            reaction.style.display = 'none';
+            gameBackground.classList.add('blurred');
+
+            const prevPageBtn = document.getElementById('prev-page');
+            const nextPageBtn = document.getElementById('next-page');
+
+            prevPageBtn.addEventListener('click', () => {
+                bookPageIndex = Math.max(bookPageIndex - 1, 0);
+                updateBookPage();
+            });
+
+            nextPageBtn.addEventListener('click', () => {
+                const maxPages = Math.ceil(bookImages.length / 2);
+                bookPageIndex = Math.min(bookPageIndex + 1, maxPages - 1);
+                updateBookPage();
+            });
+        });
+
+        closeBtn.addEventListener('click', () => {
+            overlay.style.display = 'none';
+            reaction.style.display = 'none';
+            gameBackground.classList.remove('blurred');
+        });
+    </script>
+</body>
+</html>
